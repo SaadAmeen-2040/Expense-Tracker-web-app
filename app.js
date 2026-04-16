@@ -1,5 +1,5 @@
 /* ═══════════════════════════════════════════════
-   PREMIUM EXPENSE TRACKER — app.js
+    EXPENSE TRACKER — app.js
 ═══════════════════════════════════════════════ */
 
 // ── SVG icon helper (matches sprite in index.html) ────

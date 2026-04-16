@@ -1,9 +1,8 @@
-# 💰 Premium Expense Tracker — Complete Project Report
+# 💰  Expense Tracker — Complete Project Report
 
-> **Author:** Name  
+> **Author:** Muhammad Nadeem  
 > **Type:** Frontend Web Application (Vanilla JS)  
 > **Version:** 2.0  
-> **Date:** April 2026  
 > **Status:** ✅ Fully Functional & Responsive
 
 ---
@@ -30,7 +29,7 @@
 
 ## 1. Project Overview
 
-The **Premium Expense Tracker** is a fully client-side, single-page web application for managing personal finances. It allows users to log, categorise, search, and analyse their expenses with a rich, glassmorphic UI that works offline without any backend dependency.
+The ** Expense Tracker** is a fully client-side, single-page web application for managing personal finances. It allows users to log, categorise, search, and analyse their expenses with a rich, glassmorphic UI that works offline without any backend dependency.
 
 All data is persisted using the browser's **`localStorage` API**, making it immediately usable without login or internet access (after first load).
 
@@ -595,4 +594,4 @@ btnSubmit.disabled = false;
 
 ---
 
-*Report generated: April 2026 | Premium Expense Tracker v2.0*
+*Report generated: April 2026 |  Expense Tracker v2.0*
