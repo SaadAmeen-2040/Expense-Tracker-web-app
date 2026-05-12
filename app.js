@@ -2,6 +2,49 @@
     EXPENSE TRACKER — app.js
 ═══════════════════════════════════════════════ */
 
+// Auth Check
+const token = localStorage.getItem('token');
+// We don't necessarily need to redirect here if PHP handled it,
+// but it's good for a double-check if someone manually clears storage.
+if (!token) {
+    // Check if we are already on login.php to avoid loop
+    if (!window.location.pathname.endsWith('login.php')) {
+        window.location.href = 'login.php';
+    }
+}
+
+async function fetchWithAuth(url, options = {}) {
+    options.headers = {
+        ...options.headers,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+    };
+    const res = await fetch(url, options);
+    if (res.status === 401 || res.status === 403) {
+        localStorage.removeItem('token');
+        window.location.href = 'login.php';
+    }
+    return res;
+}
+
+// Add Logout button logic inside Navbar later or near header
+document.addEventListener('DOMContentLoaded', () => {
+    const headerActions = document.querySelector('.header-actions');
+    if (headerActions) {
+        const logoutBtn = document.createElement('button');
+        logoutBtn.className = 'btn-action';
+        logoutBtn.style.marginLeft = '10px';
+        logoutBtn.innerHTML = '<svg class="icon icon-sm" aria-hidden="true"><use href="#ic-x"/></svg> Logout';
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('token');
+            localStorage.removeItem('role');
+            localStorage.removeItem('username');
+            window.location.href = 'api/logout.php';
+        };
+        headerActions.appendChild(logoutBtn);
+    }
+});
+
 // ── SVG icon helper (matches sprite in index.html) ────
 function svgIcon(id, sizeClass = 'icon-sm') {
     return `<svg class="icon ${sizeClass}" aria-hidden="true"><use href="#${id}"/></svg>`;
@@ -113,17 +156,23 @@ document.getElementById('date').valueAsDate = new Date();
 // ═══════════════════════════════════════════════
 // LOCALSTORAGE HELPERS
 // ═══════════════════════════════════════════════
-function loadExpenses() {
-    try {
-        const stored = localStorage.getItem('expenses');
-        expenses = stored ? JSON.parse(stored) : [];
-    } catch {
-        expenses = [];
+function loadBudget() {
+    monthlyBudget = parseFloat(localStorage.getItem('monthlyBudget') || '0');
+    if (monthlyBudget > 0) {
+        budgetAmountInput.value = monthlyBudget;
     }
 }
 
-function saveExpenses() {
-    localStorage.setItem('expenses', JSON.stringify(expenses));
+async function loadExpenses() {
+    try {
+        const res = await fetchWithAuth('api/expenses');
+        const data = await res.json();
+        expenses = data.expenses || [];
+        sortExpenses();
+    } catch (err) {
+        console.error('Failed to load expenses', err);
+        expenses = [];
+    }
 }
 
 function loadBudget() {
@@ -204,37 +253,37 @@ expenseForm.addEventListener('submit', (e) => {
     btnSubmit.innerHTML = `${svgIcon('ic-spinner')} Saving…`;
     btnSubmit.disabled  = true;
 
-    setTimeout(() => {
-        if (editId) {
-            // ── Edit mode ──
-            const idx = expenses.findIndex(ex => String(ex.id) === String(editId));
-            if (idx !== -1) {
-                expenses[idx] = { ...expenses[idx], title, amount, category, date, notes };
+    setTimeout(async () => {
+        try {
+            if (editId) {
+                // ── Edit mode ──
+                await fetchWithAuth(`api/expenses/${editId}`, {
+                    method: 'PUT',
+                    body: JSON.stringify({ title, amount, category, date, notes })
+                });
+                showMessage('Expense updated!', 'success');
+                cancelEdit();
+            } else {
+                // ── Add mode ──
+                const newId = Date.now().toString();
+                await fetchWithAuth('api/expenses', {
+                    method: 'POST',
+                    body: JSON.stringify({ id: newId, title, amount, category, date, notes })
+                });
+                showMessage('Expense added!', 'success');
+                expenseForm.reset();
+                document.getElementById('date').valueAsDate = new Date();
             }
-            showMessage('Expense updated!', 'success');
-            cancelEdit();
-        } else {
-            // ── Add mode ──
-            const newExpense = {
-                id: Date.now().toString(),
-                title,
-                amount,
-                category,
-                date,
-                notes
-            };
-            expenses.unshift(newExpense);
-            showMessage('Expense added!', 'success');
-            expenseForm.reset();
-            document.getElementById('date').valueAsDate = new Date();
+
+            await loadExpenses();
+            updateUI();
+        } catch (e) {
+            console.error(e);
+            showMessage('Error saving expense', 'error');
+        } finally {
+            btnSubmit.innerHTML = originalHTML;
+            btnSubmit.disabled  = false;
         }
-
-        sortExpenses();
-        saveExpenses();
-        updateUI();
-
-        btnSubmit.innerHTML = originalHTML;
-        btnSubmit.disabled  = false;
     }, 180);
 });
 
@@ -318,7 +367,7 @@ document.addEventListener('keydown', (e) => {
     }
 });
 
-modalConfirm.addEventListener('click', () => {
+modalConfirm.addEventListener('click', async () => {
     deleteModal.hidden = true;
 
     if (!pendingDeleteId) return;
@@ -328,25 +377,30 @@ modalConfirm.addEventListener('click', () => {
     pendingDeleteId      = null;
     pendingDeleteElement = null;
 
-    // Animate item out
-    if (buttonElement) {
-        const item = buttonElement.closest('.expense-item');
-        if (item) {
-            item.classList.add('deleting');
-            setTimeout(() => {
-                expenses = expenses.filter(ex => String(ex.id) !== String(id));
-                saveExpenses();
-                updateUI();
-                showMessage('Expense deleted', 'success');
-            }, 320);
-            return;
-        }
-    }
+    try {
+        await fetchWithAuth(`api/expenses/${id}`, { method: 'DELETE' });
 
-    expenses = expenses.filter(ex => String(ex.id) !== String(id));
-    saveExpenses();
-    updateUI();
-    showMessage('Expense deleted', 'success');
+        // Animate item out
+        if (buttonElement) {
+            const item = buttonElement.closest('.expense-item');
+            if (item) {
+                item.classList.add('deleting');
+                setTimeout(async () => {
+                    await loadExpenses();
+                    updateUI();
+                    showMessage('Expense deleted', 'success');
+                }, 320);
+                return;
+            }
+        }
+
+        await loadExpenses();
+        updateUI();
+        showMessage('Expense deleted', 'success');
+    } catch (e) {
+        console.error(e);
+        showMessage('Error deleting expense', 'error');
+    }
 });
 
 // ═══════════════════════════════════════════════
@@ -757,9 +811,9 @@ function drawCharts() {
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-function init() {
-    loadExpenses();
+async function init() {
     loadBudget();
+    await loadExpenses();
     updateUI();
 }
 

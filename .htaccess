@@ -1,0 +1,23 @@
+RewriteEngine On
+
+# 1. Route API calls (keep these as they are relative to root)
+RewriteRule ^api/login$ api/login.php [L]
+RewriteRule ^api/logout$ api/logout.php [L]
+RewriteRule ^api/expenses(/.*)?$ api/expenses.php [L]
+RewriteRule ^api/admin/stats$ api/admin_stats.php [L]
+RewriteRule ^api/admin/users(/.*)?$ api/admin_users.php [L]
+
+# 2. Redirect .html to .php (if someone tries old links)
+RewriteRule ^index\.html$ index.php [R=301,L]
+RewriteRule ^login\.html$ login.php [R=301,L]
+RewriteRule ^admin\.html$ admin.php [R=301,L]
+
+# 3. Clean URLs for pages (optional but nice)
+# RewriteCond %{REQUEST_FILENAME} !-f
+# RewriteRule ^login$ login.php [L]
+# RewriteRule ^admin$ admin.php [L]
+
+# 4. Fallback to index.php for any other non-file request
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index.php [L]
