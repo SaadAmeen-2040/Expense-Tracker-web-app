@@ -20,15 +20,20 @@ A high-performance, beautiful, and intuitive personal finance management tool bu
 - **Search & Filter**: Find specific transactions quickly using the real-time search bar or category filters.
 - **CSV Export**: Download your entire expense history as a CSV file for external analysis or backup.
 
+### ⚙️ Profile & Security
+- **Email Management**: Update your registered email address at any time.
+- **Password Security**: Securely change your password with current password verification.
+- **Eye Toggle**: Show/Hide password feature on the login page for better usability.
+
 ### 🛡️ Secure & Role-Based
-- **User Authentication**: Secure login system using PHP Sessions and password hashing (`password_hash`).
+- **Hybrid Authentication**: Secure login system using PHP Sessions and JWT tokens for API calls.
 - **Admin Dashboard**: A dedicated space for administrators to monitor platform-wide statistics (Total Users, Total Transactions, Total Spent) and manage user accounts.
 - **Session Protection**: All sensitive pages are protected; unauthorized users are automatically redirected to the login page.
 
 ### 🎨 Premium UI/UX
+- **Improved Navbar**: A professional, sticky navbar with a user profile dropdown and animated transitions.
 - **Glassmorphic Design**: A modern, translucent interface with vibrant animated backgrounds.
 - **Dark/Light Mode**: Toggle between sleek dark mode and clean light mode with a single click.
-- **Fully Responsive**: Optimized for desktops, tablets, and smartphones.
 
 ---
 
@@ -58,9 +63,9 @@ A high-performance, beautiful, and intuitive personal finance management tool bu
 
 ## 🔑 Default Credentials
 
-| Role | Username | Password |
+| Role | Username / Email | Password |
 | :--- | :--- | :--- |
-| **Admin** | `admin` | `admin123` |
+| **Admin** | `admin` or `admin@expense.com` | `Admin@1234` |
 
 ---
 
@@ -68,21 +73,24 @@ A high-performance, beautiful, and intuitive personal finance management tool bu
 
 ```text
 ├── api/                # Backend PHP endpoints
-│   ├── auth.php        # Authentication logic
+│   ├── auth.php        # Authentication middleware
 │   ├── db.php          # Database connection
 │   ├── expenses.php    # CRUD operations for expenses
+│   ├── profile.php     # Profile update logic
 │   ├── login.php       # Login handler
 │   └── ...             # Other API helpers
 ├── includes/           # Reusable PHP templates
 │   ├── header.php      # Meta tags, CSS, and SVG sprite
-│   ├── navbar.php      # Navigation bar
+│   ├── navbar.php      # Improved Navigation bar
 │   └── footer.php      # Scripts and closing tags
 ├── admin.php           # Admin Dashboard page
 ├── index.php           # User Dashboard (Main Page)
-├── login.php           # Login page
-├── app.js              # Main frontend logic (User)
+├── login.php           # Login page with Eye Toggle
+├── settings.php        # Profile Settings page
+├── app.js              # Main frontend logic
 ├── admin.js            # Admin dashboard logic
-├── style.css           # Global styles and themes
+├── settings.js         # Profile management logic
+├── style.css           # Global premium styles
 └── schema.sql          # Database initialization script
 ```
 
@@ -93,7 +101,7 @@ A high-performance, beautiful, and intuitive personal finance management tool bu
 - **Backend**: PHP 7.4+, MySQL (PDO)
 - **Frontend**: Vanilla JavaScript (ES6+), HTML5, CSS3
 - **Visualization**: [Chart.js](https://www.chartjs.org/)
-- **Icons**: [Heroicons](https://heroicons.com/)
+- **Icons**: [Heroicons](https://heroicons.com/) & [Lucide](https://lucide.dev/) (via SVG)
 - **Typography**: [Poppins](https://fonts.google.com/specimen/Poppins) (Google Fonts)
 
 ---
